@@ -34,6 +34,68 @@ export default function Dashboard() {
   const [row, setRow] = useState<TrafficData | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
+  // Simple client-only login (no Supabase auth)
+  const [user, setUser] = useState<{ name: string } | null>(() => {
+    try {
+      const s = typeof window !== "undefined" ? localStorage.getItem("user") : null;
+      return s ? JSON.parse(s) : null;
+    } catch {
+      return null;
+    }
+  });
+
+  const login = (name: string) => {
+    const u = { name };
+    setUser(u);
+    try { localStorage.setItem("user", JSON.stringify(u)); } catch {}
+  };
+  const logout = () => {
+    setUser(null);
+    try { localStorage.removeItem("user"); } catch {}
+  };
+
+  const LoginForm = ({ onLogin }: { onLogin: (name: string) => void }) => {
+    const [name, setName] = useState("");
+    return (
+      <div className="min-h-screen flex items-center justify-center p-4">
+        <Card className="w-full max-w-md">
+          <CardHeader>
+            <CardTitle>Sign in</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <form
+              onSubmit={(e) => {
+                e.preventDefault();
+                if (name.trim()) onLogin(name.trim());
+              }}
+              className="space-y-4"
+            >
+              <input
+                aria-label="name"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                placeholder="Your name"
+                className="w-full rounded border px-3 py-2"
+              />
+              <div className="flex items-center justify-between">
+                <button type="submit" className="rounded bg-blue-600 text-white px-4 py-2">
+                  Sign in
+                </button>
+                <button
+                  type="button"
+                  onClick={() => { setName("guest"); onLogin("guest"); }}
+                  className="text-sm text-slate-600"
+                >
+                  Join as guest
+                </button>
+              </div>
+            </form>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  };
+
   useEffect(() => {
     let alive = true;
 
@@ -77,7 +139,12 @@ export default function Dashboard() {
       supabase.removeChannel(ch);
     };
   }, [isLoading]);
-
+  
+  // If not logged in show the simple login UI
+  if (!user) {
+    return <LoginForm onLogin={login} />;
+  }
+ 
   const TrafficLight = ({ color }: { color: "red" | "yellow" | "green" | null }) => (
     <div className="flex flex-col items-center">
       <div className="relative h-56 w-24 rounded-[2rem] bg-slate-900 p-3 shadow-2xl">
@@ -129,6 +196,10 @@ export default function Dashboard() {
 
   return (
     <main className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 p-4 md:p-6">
+      <div className="flex items-center justify-end mb-4">
+        <div className="text-sm text-slate-700 mr-4">Signed in as {user?.name}</div>
+        <button onClick={logout} className="text-sm text-red-600">Sign out</button>
+      </div>
       <div className="mx-auto max-w-6xl">
         <header className="mb-6 text-center">
           <h1 className="text-2xl md:text-3xl font-bold text-slate-800">Accra Traffic Monitoring System</h1>
