@@ -32,22 +32,17 @@ body {
   0% { background-position: 0 0, 0 0; }
   100% { background-position: 0 800px, 0 0; }
 }
-
-/* Dark asphalt + moving dashed center line */
 .road-bg {
-  /* layer 1: dashed center line, layer 2: dark gradient */
   background:
     repeating-linear-gradient(
       to bottom,
       transparent 0 90px,
-      rgba(255, 213, 0, 0.95) 90px 98px,  /* dashed yellow line */
+      rgba(255, 213, 0, 0.95) 90px 98px,
       transparent 98px 188px
     ),
     radial-gradient(1200px 600px at 50% -300px, #1f2937, #0b1220 70%);
   animation: roadScroll 14s linear infinite;
 }
-
-/* optional subtle noise overlay for depth (very light) */
 .road-bg::before {
   content: "";
   position: fixed;
